@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from fastapi.responses import HTMLResponse
 
 from processing.text_processor import process_file
 from embedding.embedder import get_embeddings
 from search.vector_store import VectorStore
 from llm.generator import generate_answer
+
 import os
 
 app = FastAPI()
@@ -20,18 +22,28 @@ def load_data():
     global vector_store
 
     data_folder = "data"
-    vector_store = None
+    vector_store = VectorStore()
 
-    for file_name in os.listdir(data_folder):
+    # Ensure data folder exists
+    if not os.path.exists(data_folder):
+        os.makedirs(data_folder)
+        print("Created empty data folder")
+
+    files = os.listdir(data_folder)
+
+    if not files:
+        print("No files found in data folder. Running with empty store.")
+        return
+
+    for file_name in files:
         file_path = os.path.join(data_folder, file_name)
 
         chunks = process_file(file_path)
         embeddings = get_embeddings(chunks)
 
-        if vector_store is None:
-            vector_store = VectorStore(dim=len(embeddings[0]))
-
         vector_store.add(embeddings, chunks)
+
+    print("Data loaded successfully")
 
 
 @app.on_event("startup")
@@ -41,14 +53,18 @@ def startup():
 
 @app.post("/ask")
 def ask_question(request: QueryRequest):
+    global vector_store
+
+    # Handle empty vector store
+    if not vector_store or not vector_store.texts:
+        return {"answer": "No data available. Please upload documents."}
+
     query_embedding = get_embeddings([request.query])[0]
     retrieved_chunks = vector_store.search(query_embedding)
 
     answer = generate_answer(request.query, retrieved_chunks)
 
     return {"answer": answer}
-
-from fastapi.responses import HTMLResponse
 
 
 @app.get("/", response_class=HTMLResponse)
