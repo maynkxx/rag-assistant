@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+sentence-transformers
+faiss-cpu
+numpy
+nltk
+requests
+python-dotenv
+groq
+google-api-python-client
+google-auth
