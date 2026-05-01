@@ -4,11 +4,14 @@ import nltk
 from nltk.tokenize import sent_tokenize
 
 
-# Ensure tokenizer is available (runs only if needed)
+# Ensure tokenizer is available
 try:
     nltk.data.find('tokenizers/punkt')
+    nltk.data.find('tokenizers/punkt_tab')
 except LookupError:
     nltk.download('punkt')
+    nltk.download('punkt_tab')
+
 
 
 def read_txt(file_path):

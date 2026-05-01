@@ -1,15 +1,19 @@
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sentence_transformers import SentenceTransformer
 
-# Initialize vectorizer once
-vectorizer = TfidfVectorizer()
+# Initialize model once (lightweight and fast)
+model = SentenceTransformer('all-MiniLM-L6-v2')
 
 
 def get_embeddings(text_chunks):
     """
-    Convert text chunks into vector embeddings using TF-IDF
+    Convert text chunks into vector embeddings using sentence-transformers
     """
-    embeddings = vectorizer.fit_transform(text_chunks).toarray()
-    return embeddings
+    if not text_chunks:
+        return []
+    
+    embeddings = model.encode(text_chunks)
+    return embeddings.tolist()
+
 
 
 if __name__ == "__main__":

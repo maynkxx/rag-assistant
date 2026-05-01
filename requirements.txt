@@ -7,4 +7,7 @@ python-dotenv
 groq
 google-api-python-client
 google-auth
+google-auth-httplib2
+google-auth-oauthlib
 scikit-learn
+sentence-transformers
